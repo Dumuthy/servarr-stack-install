@@ -17,6 +17,6 @@ Multi-application Servarr stack installer with FlareSolverr and Recyclarr suppor
    
    ## Applications Supported
    - Radarr, Sonarr, Lidarr, Prowlarr, Readarr, Whisparr
-   - FlareSolverr
-   - Recyclarr
+   - FlareSolverr (coming soon)
+   - Recyclarr (coming soon)
    - More *arr tools to be added at a later time
