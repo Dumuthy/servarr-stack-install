@@ -9,6 +9,15 @@ Multi-application Servarr stack installer with FlareSolverr and Recyclarr suppor
    Based on the original Servarr installation script by DoctorArr, Bakerboy448, and the Servarr Community:
    https://github.com/Servarr/Wiki/blob/master/servarr/servarr-install-script.sh
    
+   ## Notes
+   - This script is to be run inside an existing Debian 12 LXC or bare metal install
+   - I will not hand-hold you through this, I assume you have some idea of what you are doing
+   - Obtain root shell (either via ssh or other means)
+   - Run 'wget https://raw.githubusercontent.com/Dumuthy/servarr-stack-install/main/servarr-install-script.sh'
+   - Run 'chmod +x servarr-install-script.sh'
+   - Run 'bash servarr-install-script.sh'
+   - The rest will be explained during the installation process.
+   
    ## Features
    - Install multiple *arr applications at once
    - Includes FlareSolverr support
