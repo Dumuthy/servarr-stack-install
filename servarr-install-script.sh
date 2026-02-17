@@ -42,7 +42,7 @@ reset='\033[0m' # No Color
 scriptversion="4.0.0"
 scriptdate="2025-02-17"
 
-set -euo pipefail
+set -uo pipefail
 
 ### Am I root?, need root! GROOT!
 
@@ -365,7 +365,6 @@ for app in "${selected_apps[@]}"; do
         app_port="8989"
         app_prereq="curl sqlite3 libsqlite3-0"
         app_umask="0002"
-        branch="master"
         ;;
     lidarr)
         app_port="8686"
@@ -383,7 +382,6 @@ for app in "${selected_apps[@]}"; do
         app_port="8787"
         app_prereq="curl sqlite3 libsqlite3-0"
         app_umask="0002"
-        branch="develop"
         ;;
     whisparr)
         app_port="6969"
@@ -448,21 +446,57 @@ for app in "${selected_apps[@]}"; do
         apt update && apt install -y "${missing_packages[@]}"
     fi
 
-    # check if architecture is correct
-    echo ""
+# ============================================================
+    # [OLD CODE - Remove after testing]
+    # Generic URL builder used $app and $branch to construct a
+    # single download URL pattern. Failed for Sonarr which uses
+    # a completely different endpoint. Replaced below with
+    # explicit per-app URLs matching community-scripts/ProxmoxVE.
+    # ============================================================
+    # ARCH=$(dpkg --print-architecture)
+    # dlbase="https://$app.servarr.com/v1/update/$branch/updatefile?os=linux&runtime=netcore"
+    # case "$ARCH" in
+    # "amd64") DLURL="${dlbase}&arch=x64" ;;
+    # "armhf") DLURL="${dlbase}&arch=arm" ;;
+    # "arm64") DLURL="${dlbase}&arch=arm64" ;;
+    # *)
+    #     echo -e ${red}"Your arch is not supported!"
+    #     echo -e "Exiting installer script!"${reset}
+    #     exit 1
+    #     ;;
+    # esac
+    # ============================================================
+    # [END OLD CODE]
+    # ============================================================
+
+    # [NEW CODE] Explicit per-app URLs matching community-scripts
+    # patterns. Sonarr uses services.sonarr.tv; all others use
+    # their respective servarr.com subdomain endpoints.
     ARCH=$(dpkg --print-architecture)
-    # get arch
-    dlbase="https://$app.servarr.com/v1/update/$branch/updatefile?os=linux&runtime=netcore"
     case "$ARCH" in
-    "amd64") DLURL="${dlbase}&arch=x64" ;;
-    "armhf") DLURL="${dlbase}&arch=arm" ;;
-    "arm64") DLURL="${dlbase}&arch=arm64" ;;
-    *)
-        echo -e ${red}"Your arch is not supported!"
-        echo -e "Exiting installer script!"${reset}
-        exit 1
-        ;;
+        "amd64") arch_str="x64"   ;;
+        "armhf") arch_str="arm"   ;;
+        "arm64") arch_str="arm64" ;;
+        *)
+            echo -e ${red}"Architecture ($ARCH) is not supported. Skipping ${app^}."${reset}
+            install_results+=("${app^}|Port: $app_port|FAILED - unsupported arch")
+            continue
+            ;;
     esac
+
+    case "$app" in
+        sonarr)
+            DLURL="https://services.sonarr.tv/v1/download/main/latest?version=4&os=linux&arch=${arch_str}"
+            ;;
+        radarr|lidarr|prowlarr|whisparr)
+            DLURL="https://${app}.servarr.com/v1/update/${branch}/updatefile?os=linux&runtime=netcore&arch=${arch_str}"
+            ;;
+        readarr)
+            DLURL="https://readarr.servarr.com/v1/update/develop/updatefile?os=linux&runtime=netcore&arch=${arch_str}"
+            ;;
+    esac
+    echo ""
+    # [END NEW CODE]
 
     echo -e ${yellow}"Removing tarballs..."${reset}
     sleep 3
@@ -471,12 +505,32 @@ for app in "${selected_apps[@]}"; do
     echo ""
     echo -e ${yellow}"Downloading required files..."${reset}
     echo ""
-    wget --content-disposition "$DLURL"
+    # [NEW CODE] Explicit error trap on download so a bad URL
+    # or network failure skips this app and continues the loop
+    # rather than crashing the whole script silently.
+    if ! wget --content-disposition "$DLURL"; then
+        echo ""
+        echo -e "${red}Download failed for ${app^}. Skipping.${reset}"
+        install_results+=("${app^}|Port: $app_port|FAILED - download error")
+        continue
+    fi
+    # [END NEW CODE]
     echo ""
     echo -e ${yellow}"Download complete!"${reset}
     echo ""
     echo -e ${yellow}"Extracting tarball!"${reset}
-    tar -xvzf "${app^}".*.tar.gz >/dev/null 2>&1
+    # [NEW CODE] Explicit error trap on extraction. If wget
+    # returned a JSON error page instead of a tarball (like the
+    # original Sonarr failure), tar will fail here and the loop
+    # continues cleanly to the next app.
+    if ! tar -xvzf "${app^}".*.tar.gz >/dev/null 2>&1; then
+        echo ""
+        echo -e "${red}Extraction failed for ${app^}. The download may not be a valid tarball. Skipping.${reset}"
+        install_results+=("${app^}|Port: $app_port|FAILED - extraction error")
+        rm -f "${app^}".*.tar.gz
+        continue
+    fi
+    # [END NEW CODE]
     echo ""
     echo -e ${yellow}"Installation files downloaded and extracted!"${reset}
 
