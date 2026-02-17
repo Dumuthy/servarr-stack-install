@@ -22,6 +22,7 @@
 ### Version v3.0.13+ 2024+ - Additional Updates by: The Servarr Community
 ### Version v4.0.0 - Multi-app stack installer; added multi-select menu, installation loop,
 ###                  Sonarr and Readarr support, shared user/group prompts, and summary screen.
+### Version v1.0.1 2026-02-17 - Dumuthy (Fix Sonarr download URL, add per-app error handling, soften set -e)
 
 ### Boilerplate Warning
 #THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
@@ -39,7 +40,7 @@ red='\033[0;31m'
 brown='\033[0;33m'
 reset='\033[0m' # No Color
 
-scriptversion="1.0.0"
+scriptversion="1.0.1"
 scriptdate="2026-02-17"
 
 set -uo pipefail
