@@ -11,6 +11,7 @@ Multi-application Servarr stack installer with FlareSolverr and Recyclarr suppor
    
    ## Notes
    - This script is to be run inside an existing Debian 12 LXC or bare metal install
+   - Future versions will eventually support full Proxmox Community Script functionality.
    - I will not hand-hold you through this, I assume you have some idea of what you are doing
    - Obtain root shell (either via ssh or other means)
    - Run `wget https://raw.githubusercontent.com/Dumuthy/servarr-stack-install/main/servarr-install-script.sh`
@@ -23,8 +24,9 @@ Multi-application Servarr stack installer with FlareSolverr and Recyclarr suppor
    - Radarr, Sonarr, Lidarr, Prowlarr, Readarr, Whisparr
    - Easy checkbox selection for which *ARRs you wish to install
    
-   ## Applications Supported
+   ## Future Supported Applications
    - Tdarr
    - FlareSolverr
    - Recyclarr
+   - Dispatcharr
    - More *arr tools to be added at a later time
